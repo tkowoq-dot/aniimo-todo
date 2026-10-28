@@ -23,7 +23,7 @@ body {
     pointer-events: none;
 }
 
-/* 背景画像レイヤー（2枚作ってアニメーションさせる） */
+/* 背景画像レイヤー */
 .bg-slide {
     position: absolute;
     top: 0;
@@ -33,7 +33,6 @@ body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    /* フェード切り替えのアニメーション速度（2.5秒かけてゆっくり溶け合う） */
     transition: opacity 4s ease-in-out;
     opacity: 0;
 }
@@ -42,7 +41,7 @@ body {
         opacity: 1;
     }
 
-/* 背景を少し暗くして文字を見やすくするオーバーレイ（今まで同様） */
+/* 背景を少し暗くして文字を見やすくするオーバーレイ */
 .bg-overlay {
     position: absolute;
     top: 0;
@@ -53,7 +52,7 @@ body {
     z-index: 1;
 }
 
-/* ★ 全体を包む箱 */
+/* 全体を包む箱 */
 .container {
     max-width: 680px;
     margin-left: auto;
@@ -142,12 +141,12 @@ label {
     display: flex;
     align-items: center;
     position: relative;
-    padding-left: 32px; /* アイコン用のスペース */
+    padding-left: 32px;
     cursor: pointer;
     line-height: 1.6;
     font-feature-settings: "palt" 1;
-    font-kerning: normal; /* 欧文（数字やカッコ）のカーニングを有効化 */
-    letter-spacing: 0.02em; /* 全体をわずかに整えて読みやすくする */
+    font-kerning: normal;
+    letter-spacing: 0.02em;
 }
 
 /* 時間表示テキスト */
@@ -210,7 +209,7 @@ input[type="checkbox"]:checked ~ label::before {
     transition: stroke-dashoffset 0.25s cubic-bezier(0, 0, 0.2, 1);
 }
 
-/* 4. チェックが入った瞬間：シュッとアニメーション */
+/* 4. チェックアニメーション */
 input[type="checkbox"]:checked + .check-icon {
     stroke-dashoffset: 0;
 }
@@ -239,7 +238,7 @@ input[type="checkbox"]:checked + .check-icon {
 }
 
 #countdown {
-    color: #2997FF; /* Apple Blueで強調 */
+    color: #2997FF;
     font-weight: 600;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
     letter-spacing: 0.05em;
