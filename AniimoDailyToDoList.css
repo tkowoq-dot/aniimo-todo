@@ -140,10 +140,10 @@ body {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.progress-segment.active {
-    background: linear-gradient(90deg, #0071E3, #2997FF);
-    box-shadow: 0 0 10px rgba(41, 151, 255, 0.5);
-}
+    .progress-segment.active {
+        background: #2997FF;
+        box-shadow: 0 0 10px rgba(41, 151, 255, 0.5);
+    }
 
 /* =====================================================
    タスクカード
@@ -275,4 +275,8 @@ input[type="checkbox"]:checked + .check-icon {
     .task-card label {
         --pad: 15px;
     }
+}
+
+.task-card label:has(input:checked) {
+    color: rgba(245, 243, 255, 0.5);
 }
