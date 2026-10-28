@@ -6,29 +6,32 @@
     <title>Aniimo チェックリスト</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="AniimoDailyToDoList.css">
 </head>
 <body>
     <div id="bg-slideshow"></div>
 
-        <div class="container">
+    <div class="container">
 
-            <h1 class="app-title">
-                <span class="brand">Aniimo</span>
-                <span class="sub">デイリーチェックリスト</span>
-            </h1>
-            <div class="reset-timer">
-                更新まであと <span id="countdown">--:--:--</span>
-            </div>
-            <div class="progress-container">
-                <p id="progress">0 / 7</p>
-                <div class="progress-track" id="progress-track"></div>
-            </div>
-            <div id="task-list"></div>
+        <h1 class="app-title">
+            <span class="brand">Aniimo</span>
+            <span class="sub">デイリーチェックリスト</span>
+        </h1>
 
+        <div class="reset-timer">
+            更新まであと <span id="countdown">--:--:--</span>
         </div>
 
-        <script src="AniimoDailyToDoList.js"></script>
+        <div class="progress-container">
+            <p id="progress">0 / 7</p>
+            <div class="progress-track" id="progress-track"></div>
+        </div>
+
+        <div id="task-list"></div>
+
+    </div>
+
+    <script src="AniimoDailyToDoList.js"></script>
 </body>
 </html>

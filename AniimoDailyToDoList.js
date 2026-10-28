@@ -1,33 +1,61 @@
-// --- 1. タスクのデータリスト ---
+// =====================================================
+// 設定（ここだけ変えれば動きを変えられる）
+// =====================================================
+
+// 1日の区切りの時刻（朝5時）。ゲーム側の更新時刻が変わったらここを直す
+const RESET_HOUR = 5;
+
+// 背景スライドショーの画像と切り替え間隔
+const BG_IMAGES = [
+    'Aniimobg1.webp',
+    'Aniimobg2.webp',
+    'Aniimobg3.webp',
+    'Aniimobg4.webp',
+    'Aniimobg5.webp'
+];
+const CHANGE_INTERVAL = 10000; // 10000 = 10秒ごと
+
+// タスクのデータ
+// ★変更：各タスクに id をつけた。途中に足したり消したりしても、
+//   チェックの保存がずれない（id は一度決めたら変えないこと）
 const TASKS_DATA = [
-    { title: "デイリー活躍（500ポイント）" },
-    { title: "エナジーの消費" },
-    { title: "ホームキャンプのデイリー注文" },
-    { title: "フレンドに2回メッセージを送る" },
-    { title: "謎の商人から商品を購入" },
-    { title: "綺羅星のお茶会", time: "(18:00〜翌2:00)" },
-    { title: "ゲーム内メールの確認" }
+    { id: "daily-activity", title: "デイリー活躍（500ポイント）" },
+    { id: "energy",         title: "エナジーの消費" },
+    { id: "home-camp",      title: "ホームキャンプのデイリー注文" },
+    { id: "friend-message", title: "フレンドに2回メッセージを送る" },
+    { id: "merchant",       title: "謎の商人から商品を購入" },
+    { id: "tea-party",      title: "綺羅星のお茶会", time: "(18:00〜翌2:00)" },
+    { id: "mail",           title: "ゲーム内メールの確認" }
 ];
 
-// --- 2. HTMLの描画エリアと要素を取得 ---
+
+// =====================================================
+// HTMLの要素を取得
+// =====================================================
+
 const taskListContainer = document.querySelector("#task-list");
 const progress = document.querySelector("#progress");
 const progressTrack = document.querySelector("#progress-track");
+const countdownEl = document.querySelector("#countdown");
 
-// --- 3. JavaScriptからHTML（task-card）を動的に一括生成する ---
+
+// =====================================================
+// タスクカードの生成
+// =====================================================
+
 function generateTaskCards() {
-    taskListContainer.innerHTML = ""; // 初期化
+    taskListContainer.innerHTML = "";
 
-    TASKS_DATA.forEach((task, index) => {
+    TASKS_DATA.forEach((task) => {
         const card = document.createElement("div");
         card.classList.add("task-card");
 
-        // 時間表記がある場合とない場合に対応
+        // 時間表記がある場合だけ表示する
         const timeHtml = task.time ? `<span class="task-time">${task.time}</span>` : "";
 
         card.innerHTML = `
             <label>
-                <input type="checkbox" id="task-${index}">
+                <input type="checkbox" data-id="${task.id}">
                 <svg class="check-icon" viewBox="0 0 24 24">
                     <path d="M5 12l4 4L19 6" />
                 </svg>
@@ -40,47 +68,85 @@ function generateTaskCards() {
 
 generateTaskCards();
 
-// 生成されたチェックボックス要素を取得
+// 生成されたチェックボックスをまとめて取得
 const boxes = document.querySelectorAll('input[type="checkbox"]');
 
-// --- 5時リセット関連の関数 ---
 
-// 1. 現在の時刻から「朝5時区切りの日付文字列（YYYY-MM-DD）」を作る関数
-function getFiveAMDateString() {
+// =====================================================
+// 保存と復元（localStorage）
+// =====================================================
+
+// 保存に使う名前。例: "todo_energy"
+function storageKey(box) {
+    return "todo_" + box.dataset.id;
+}
+
+// ★追加：旧バージョン（番号で保存していた）のチェックを引き継ぐ
+function migrateOldKeys() {
+    TASKS_DATA.forEach((task, index) => {
+        const oldKey = "todo_box_" + index;
+        const oldValue = localStorage.getItem(oldKey);
+        if (oldValue === null) return;
+
+        if (oldValue === "true") {
+            localStorage.setItem("todo_" + task.id, "true");
+        }
+        localStorage.removeItem(oldKey);
+    });
+}
+
+function loadState() {
+    boxes.forEach((box) => {
+        if (localStorage.getItem(storageKey(box)) === "true") {
+            box.checked = true;
+        }
+    });
+}
+
+function saveState() {
+    boxes.forEach((box) => {
+        localStorage.setItem(storageKey(box), box.checked);
+    });
+}
+
+
+// =====================================================
+// 朝5時のリセット
+// =====================================================
+
+// 「朝5時区切りの日付」を YYYY-MM-DD の文字列で返す
+// （現在時刻から5時間引くと、朝5時が日付の境目になる）
+function getResetDateString() {
     const now = new Date();
-    // 朝5時を日付の境界にするため、現在の時刻から5時間引く
-    now.setHours(now.getHours() - 5);
-    
+    now.setHours(now.getHours() - RESET_HOUR);
+
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const date = String(now.getDate()).padStart(2, '0');
-    
+
     return `${year}-${month}-${date}`;
 }
 
-// 2. 日付が変わっていたら（朝5時を跨いでいたら）チェックをリセットする処理
+// 朝5時をまたいでいたら、チェックを全部外す
 function checkDailyReset() {
     const lastSavedDate = localStorage.getItem('aniimo_last_date');
-    const currentDate = getFiveAMDateString();
+    const currentDate = getResetDateString();
 
-    // 前回保存した日付と、今の5時基準の日付が違う場合
     if (lastSavedDate !== currentDate) {
-        // すべてのチェックを外す
-        boxes.forEach((box, index) => {
+        boxes.forEach((box) => {
             box.checked = false;
-            // ついでに個別の保存データも削除しておく
-            localStorage.removeItem("todo_box_" + index);
+            localStorage.removeItem(storageKey(box));
         });
-
-        // 新しい日付を保存する
         localStorage.setItem('aniimo_last_date', currentDate);
     }
 }
 
 
-// --- 既存のタスク機能関連 ---
+// =====================================================
+// 進捗バー
+// =====================================================
 
-// 0. タスクの数に合わせて分割バーを自動で生成する
+// タスクの数だけ分割バーを作る
 function createSegments() {
     progressTrack.innerHTML = "";
     boxes.forEach(() => {
@@ -90,110 +156,60 @@ function createSegments() {
     });
 }
 
-// 1. 保存されていたチェック状態を復元する
-function loadState() {
-    boxes.forEach((box, index) => {
-        const savedState = localStorage.getItem("todo_box_" + index);
-        if (savedState === "true") {
-            box.checked = true;
-        }
-    });
-}
-
-// 2. チェック状態をブラウザに保存する
-function saveState() {
-    boxes.forEach((box, index) => {
-        localStorage.setItem("todo_box_" + index, box.checked);
-    });
-}
-
-// 3. 進捗状況に合わせて、左から順にバーを埋める
+// チェックの数だけ、左から順にバーを光らせる
 function updateProgress() {
     let count = 0;
-
-    // ① チェックが入っている合計の数を数える
     boxes.forEach((box) => {
-        if (box.checked) {
-            count++;
-        }
+        if (box.checked) count++;
     });
 
-    // ② バーを左から順番に見ていき、「チェックされた総数」の分だけ光らせる
     const segments = document.querySelectorAll(".progress-segment");
     segments.forEach((segment, i) => {
-        if (i < count) {
-            segment.classList.add("active"); // 左から順に光らせる
-        } else {
-            segment.classList.remove("active"); // 残りは暗くする
-        }
+        segment.classList.toggle("active", i < count);
     });
 
     progress.textContent = `${count} / ${boxes.length}`;
 }
 
-// ★最初に「日付が変わっていないか（朝5時を跨いでいないか）」をチェック＆リセットする
-checkDailyReset();
 
-createSegments();
-loadState();
-updateProgress();
-
-
-// --- イベント登録 ---
-boxes.forEach((box) => {
-    box.addEventListener("change", function () {
-        saveState();
-        updateProgress();
-    });
-});
+// =====================================================
+// カウントダウン
+// =====================================================
 
 function updateCountdown() {
-    const now = new Date();
-    
-    // 次の「午前5:00」を目標時刻に設定
-    let target = new Date();
-    target.setHours(5, 0, 0, 0);
+    // ★追加：開きっぱなしで朝5時をまたいだときも、ここで自動リセットされる
+    checkDailyReset();
+    updateProgress();
 
-    // すでに今日のアサ5時を過ぎている場合は「明日のあさ5時」をターゲットにする
+    const now = new Date();
+
+    // 次の朝5:00を目標時刻にする
+    const target = new Date();
+    target.setHours(RESET_HOUR, 0, 0, 0);
+
+    // 今日の5時をすでに過ぎていたら、明日の5時が目標
     if (now >= target) {
         target.setDate(target.getDate() + 1);
     }
 
-    // 残り時間（ミリ秒）
     const diff = target - now;
-
-    // 時間・分・秒に計算
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-    // 2桁揃え（例: 05時間09分12秒）
     const hStr = String(hours).padStart(2, '0');
     const mStr = String(minutes).padStart(2, '0');
     const sStr = String(seconds).padStart(2, '0');
 
-    // 画面に反映
-    const countdownEl = document.getElementById('countdown');
     if (countdownEl) {
         countdownEl.textContent = `${hStr}時間${mStr}分${sStr}秒`;
     }
 }
 
-// 1秒ごとに実行
-setInterval(updateCountdown, 1000);
-// 初回実行
-updateCountdown();
 
-// --- 背景スライドショー設定 ---
-const BG_IMAGES = [
-    'Aniimobg1.webp', // 1枚目
-    'Aniimobg2.webp', // 2枚目
-    'Aniimobg3.webp', // 3枚目
-    'Aniimobg4.webp', // 4枚目
-    'Aniimobg5.webp'  // 5枚目
-];
-
-const CHANGE_INTERVAL = 10000; // 切り替え間隔（例: 10000 = 10秒ごと）
+// =====================================================
+// 背景スライドショー
+// =====================================================
 
 function initBackgroundSlideshow() {
     const slideshowContainer = document.querySelector("#bg-slideshow");
@@ -208,18 +224,17 @@ function initBackgroundSlideshow() {
     const slideA = document.querySelector("#bg-slide-a");
     const slideB = document.querySelector("#bg-slide-b");
 
-let currentIndex = Math.floor(Math.random() * BG_IMAGES.length);
+    // 最初の1枚はランダム
+    let currentIndex = Math.floor(Math.random() * BG_IMAGES.length);
     let isSlideAActive = true;
 
-    // ランダムに選ばれた最初の画像をセット
     slideA.style.backgroundImage = `url('${BG_IMAGES[currentIndex]}')`;
 
-    // 画像が1枚以下の場合は切り替え処理をスキップ
+    // 画像が1枚だけなら切り替えは不要
     if (BG_IMAGES.length <= 1) return;
 
-    // 定期的に次の画像へルーティン切り替え
     setInterval(() => {
-        // 次の画像のインデックス（最後の画像まで行ったら0に戻る）
+        // 次の画像へ（最後まで行ったら0に戻る）
         currentIndex = (currentIndex + 1) % BG_IMAGES.length;
         const nextImage = BG_IMAGES[currentIndex];
 
@@ -237,5 +252,27 @@ let currentIndex = Math.floor(Math.random() * BG_IMAGES.length);
     }, CHANGE_INTERVAL);
 }
 
-// スライドショー初期化呼び出し
+
+// =====================================================
+// 起動
+// =====================================================
+
+migrateOldKeys();   // 旧データの引き継ぎ
+checkDailyReset();  // 朝5時をまたいでいたらリセット
+createSegments();   // 進捗バーを作る
+loadState();        // 保存済みのチェックを復元
+updateProgress();   // 表示を更新
+
+// チェックを変えたら保存して、進捗を更新
+boxes.forEach((box) => {
+    box.addEventListener("change", () => {
+        saveState();
+        updateProgress();
+    });
+});
+
+// カウントダウンは1秒ごと（5時またぎのリセット判定も兼ねる）
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
 initBackgroundSlideshow();
