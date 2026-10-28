@@ -111,7 +111,7 @@ function saveState() {
 function updateProgress() {
     let count = 0;
 
-    // ① まず、チェックが入っている合計の数を数える
+    // ① チェックが入っている合計の数を数える
     boxes.forEach((box) => {
         if (box.checked) {
             count++;

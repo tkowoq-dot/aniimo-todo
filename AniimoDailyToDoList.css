@@ -23,7 +23,7 @@ body {
     pointer-events: none;
 }
 
-/* 背景画像レイヤー */
+/* 背景画像レイヤー（2枚作ってアニメーションさせる） */
 .bg-slide {
     position: absolute;
     top: 0;
