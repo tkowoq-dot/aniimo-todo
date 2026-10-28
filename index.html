@@ -3,72 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aniimo 日課チェックリスト</title>
+    <title>Aniimo チェックリスト</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="AniimoDailyToDoList.css">
 </head>
 <body>
-    <div class="container">
+    <div id="bg-slideshow"></div>
 
-        <h1>Aniimo 日課チェックリスト</h1>
-        <h2> 毎日の日課</h2>
-        <p id="progress">達成数：0 / 7</p>
+        <div class="container">
 
-        <div class="progress-track" id="progress-track"></div>
+            <h1 class="app-title">
+                <span class="brand">Aniimo</span>
+                <span class="sub">デイリーチェックリスト</span>
+            </h1>
+            <div class="reset-timer">
+                更新まであと <span id="countdown">--:--:--</span>
+            </div>
+            <div class="progress-container">
+                <p id="progress">0 / 7</p>
+                <div class="progress-track" id="progress-track"></div>
+            </div>
+            <div id="task-list"></div>
 
-        <div class="task-card">
-            <label>
-                <input type="checkbox">
-                デイリー活躍（500ポイント）
-            </label>
         </div>
 
-        <div class="task-card">
-            <label>
-                <input type="checkbox">
-                スタミナを消費する
-            </label>
-        </div>
-
-        <div class="task-card">
-            <label>
-                <input type="checkbox">
-                ホームキャンプのデイリー注文
-            </label>
-        </div>
-
-        <div class="task-card">
-            <label>
-                <input type="checkbox">
-                フレンドに2回メッセージを送る
-            </label>
-        </div>
-
-        <div class="task-card">
-            <label>
-                <input type="checkbox">
-                謎の商人から商品を購入する
-            </label>
-        </div>
-
-        <div class="task-card">
-            <label>
-                <input type="checkbox">
-                綺羅星のお茶会（18:00〜翌2:00）
-            </label>
-        </div>
-
-        <div class="task-card">
-            <label>
-                <input type="checkbox">
-                ゲーム内メールを確認する
-            </label>
-        </div>
-
-    </div>
-
-    <script src="AniimoDailyToDoList.js"></script>
+        <script src="AniimoDailyToDoList.js"></script>
 </body>
 </html>
